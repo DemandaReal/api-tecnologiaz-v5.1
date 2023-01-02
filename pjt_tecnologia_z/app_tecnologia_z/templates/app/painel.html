@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Painel{% endblock %}
+
+
+{% block content %}
+    <h1>Painel</h1>
+    <div>
+        {% if autenticado %}
+            <p>Você está autenticado com a IQ Option.</p>
+        {% else %}
+            <form action="{% url 'painel-app' %}" method="POST">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="username...">
+                <input type="password" name="password" placeholder="password...">
+                <input type="submit" value="Autenticar">
+            </form>
+            {% if credenciais_invalidas %}
+                <p>Usuário ou senha inválido. </p>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock %}
