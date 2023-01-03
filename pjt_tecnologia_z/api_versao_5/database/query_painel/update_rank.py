@@ -36,17 +36,28 @@ def update_rankings(lista_rankings, conexao, cursor_db):
         for i in range(len(lista_rankings)):
             index_df = lista_rankings[i].index.values
             for j in index_df:
-                ativo = lista_rankings[i]["ativo"][j]
-                tt_analisado = lista_rankings[i]["tt analisado"][j]
-                tt_acertos = lista_rankings[i]["tt win"][j]
-                tt_erros = lista_rankings[i]["tt loss"][j]
-                perc_win = lista_rankings[i]["perc win"][j]
-                padrao = lista_rankings[i]["padrao"][j]
+                try:
+                    ativo = lista_rankings[i]["ativo"][j]
+                    tt_analisado = lista_rankings[i]["tt analisado"][j]
+                    tt_acertos = lista_rankings[i]["tt win"][j]
+                    tt_erros = lista_rankings[i]["tt loss"][j]
+                    perc_win = lista_rankings[i]["perc win"][j]
+                    padrao = lista_rankings[i]["padrao"][j]
 
-                cmd_update = f'UPDATE rank_paridades_v5 SET par = "{ativo}", tt_analisado = {tt_analisado}, acertos = {tt_acertos}, erros = {tt_erros}, perc_win = {perc_win}, padrao = "{padrao}" WHERE id = {cont}'
-                cursor.execute(cmd_update)
-                conn.commit()
-                cont += 1
+                    if tt_acertos == 0:
+                        cmd_update = f'UPDATE rank_paridades_v5 SET par = "-", tt_analisado = {0}, acertos = {0}, erros = {0}, perc_win = {0.0}, padrao = "-" WHERE id = {cont}'
+                        cursor.execute(cmd_update)
+                        conn.commit()
+                        print(cmd_update)
+                    elif tt_acertos >= 0:
+                        cmd_update = f'UPDATE rank_paridades_v5 SET par = "{ativo}", tt_analisado = {tt_analisado}, acertos = {tt_acertos}, erros = {tt_erros}, perc_win = {perc_win}, padrao = "{padrao}" WHERE id = {cont}'
+                        cursor.execute(cmd_update)
+                        conn.commit()
+                        print(cmd_update)
+
+                    cont += 1
+                except Exception as e:
+                    print(e)
         cursor.close()
         conn.close()
         print("<<<----------------------- REGISTROS ATUALIZADOS -- DB DESCONECTADO ----------------------->>>")

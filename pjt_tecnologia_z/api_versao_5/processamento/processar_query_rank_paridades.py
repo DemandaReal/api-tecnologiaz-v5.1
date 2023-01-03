@@ -87,7 +87,7 @@ def atualizar_rank_paridades(conexao, cursor_db):
                         ["tt win", "perc win"],
                         ascending=False).head(3))
             
-            update_rankings(lista_final_ranking_ordenado, conexao=conexao, cursor_db=cursor_db)
+            update_rankings(lista_rankings=lista_final_ranking_ordenado, conexao=conexao, cursor_db=cursor_db)
         
         except Exception as e:
             print(e)
