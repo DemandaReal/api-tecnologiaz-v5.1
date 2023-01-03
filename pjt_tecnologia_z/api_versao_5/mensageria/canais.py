@@ -29,10 +29,19 @@ class Mensageria:
             {"name": "subscribeMessage", "msg": {"name": "portfolio.order-changed", "version": "1.0", "params": {"routingFilters": {"instrument_type": "digital-option"}}}, "request_id": ""},
             {"name": "subscribeMessage", "msg": {"name": "portfolio.order-changed", "version": "1.0", "params": {"routingFilters": {"instrument_type": "turbo-option"}}}, "request_id": ""},
             {"name": "subscribeMessage", "msg": {"name": "portfolio.order-changed", "version": "1.0", "params": {"routingFilters": {"instrument_type": "binary-option"}}}, "request_id": ""},
+            {"name": "sendMessage", "msg": {"name": "get-initialization-data", "version": "3.0", "body": {}}, "request_id": "get-underlying-list"}
         ]
         for i in range(len(lista_config)):
             print(lista_config[i])
             var_globais.OBJ_WSS.wss.send(json.dumps(lista_config[i]).replace("'", '"'))
+    
+    def enviar_mensagem_ativos_abertos():
+        try:
+            msg = {"name": "sendMessage", "msg": {"name": "get-initialization-data", "version": "3.0", "body": {}}, "request_id": "get-underlying-list"}
+            var_globais.OBJ_WSS.wss.send(json.dumps(msg).replace("'", '"'))
+        except Exception as e:
+            print("#########################")
+            print(e)
 
     def enviar_operacao(ativo, direcao, timeframe):
         nome = "sendMessage"
@@ -54,52 +63,43 @@ class Mensageria:
         
         enviar_mensagem_wss(nome=nome, mensagem=dadosMsg, request_id=request_id)
     
-    def coletar_candles(timeframe):
+    def coletar_candles(timeframe, padrao, quantidade):
 
         dt = data_hora_sao_paulo()
         prosseguir_padrao = False
-        if dt.minute in var_globais.LISTA_MINUTOS[1] and timeframe == 60:
+        if dt.minute in var_globais.LISTA_MINUTOS[0] and timeframe == 60:
+            prosseguir_padrao = True
+            print(">>> Analisando padrão 3 - 1 minuto")
+        elif dt.minute in var_globais.LISTA_MINUTOS[1] and timeframe == 60:
             prosseguir_padrao = True
             print(">>> Analisando padrão 1 - 1 minuto")
         elif dt.minute in var_globais.LISTA_MINUTOS[2] and timeframe == 30:
             prosseguir_padrao = True
             print(">>> Analisando padrão 2 - 30 segundos")
-        
+      
         if prosseguir_padrao == False:
             print(">>> Aguardar horários das operações")
-
         elif prosseguir_padrao == True:
-            mercado = checar_tipo_mercado()
+           
+            lista_paridades_em_analise = []
             expiracao = expiracao_operacoes()[0]
-            print(mercado, expiracao)
-            var_globais.TIPO_MERCADO = mercado[0]
-            print(f"TT Lista: {len(mercado[1])}")
+            print(expiracao)
 
-            lista_paridades_em_analise = [[], []]
-            quantidade = 0
-            if timeframe == 30:
-                quantidade = 2
-            elif timeframe == 60:
-                quantidade = 5
-
-            for i in range(len(mercado[1])):
+    
+            for i in range(len(var_globais.LISTA_ATIVOS_ABERTOS)):
+                id_ativo = int(var_globais.LISTA_ATIVOS_ABERTOS["id"][i])
+                ativo = str(var_globais.LISTA_ATIVOS_ABERTOS["ativo"][i])
+                print(f"ID: {id_ativo} | ATIVO: {ativo} | TIMEFRAME: {timeframe}")
                 try:
-                    msg = json.dumps({"name": "sendMessage", "msg": {"name": "get-candles", "version": "2.0", "body": {"active_id": PARIDADES[mercado[1][i]], "size": timeframe, "to": expiracao, "count": quantidade, "": 1}}, "request_id": f"{mercado[1][i]}-{timeframe}"}).replace("'", '"')
-                    lista_paridades_em_analise[0].append(f"{mercado[1][i]}-{timeframe}")
-                    lista_paridades_em_analise[1].append(msg)
+                    msg = json.dumps({"name": "sendMessage", "msg": {"name": "get-candles", "version": "2.0", "body": {"active_id": id_ativo, "size": timeframe, "to": expiracao, "count": quantidade, "": 1}}, "request_id": f"{ativo}-{timeframe}"}).replace("'", '"')
+                    lista_paridades_em_analise.append(msg)
+                    print(msg)
                 except Exception as e:
                     print(e)
             
-            if timeframe == 30:
-                var_globais.LISTA_ANALISE_30S = lista_paridades_em_analise[0]
-            elif timeframe == 60:
-                var_globais.LISTA_ANALISE_1M = lista_paridades_em_analise[0]
-            
-        
-            for i in range(len(lista_paridades_em_analise[0])):
-                print(lista_paridades_em_analise[0][i])
-                print(lista_paridades_em_analise[1][i])
-                var_globais.OBJ_WSS.wss.send(lista_paridades_em_analise[1][i])
+            for i in range(len(lista_paridades_em_analise)):
+                print(lista_paridades_em_analise[i])
+                var_globais.OBJ_WSS.wss.send(lista_paridades_em_analise[i])
             
 
 

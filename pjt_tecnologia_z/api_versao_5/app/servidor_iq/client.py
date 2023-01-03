@@ -14,6 +14,8 @@ class ClientWSS:
     def __init__(self, url_wss):
         self.url_wss = url_wss
         self.padrao_atual = "-"
+        self.quantidade_candles = 0
+        self.lista_ativos_abertos = None
         self.wss = websocket.WebSocketApp(
             url=self.url_wss,
             on_message=self.on_message,
@@ -24,26 +26,60 @@ class ClientWSS:
     
     def on_message(self, message):
         message = json.loads(message)
-        print(message)
+    
+        horario = datetime.now()
+        segundo = horario.second
+        minuto =  horario.minute
+        if segundo >= 12 and segundo < 13:
+            try:
+                atualizar_rank_paridades()
+            except Exception as e:
+                print("************* ERRO - ATUALIZAÇÕES DO RANK PARIDADES ****************")
+                print(e)
+
+        elif segundo >= 52 and segundo < 53:
+            sleep(1)
+            Mensageria.enviar_mensagem_ativos_abertos()
+        
+        elif segundo >= 1 and segundo < 2:
+            if minuto in var_globais.LISTA_MINUTOS[1]:
+                self.padrao_atual = "padrao - 1"
+                self.quantidade_candles = 5
+                print(f">>>>>>>>>>>>>>>>>>>>>> Processando cliente: {self.padrao_atual}")
+            elif minuto in var_globais.LISTA_MINUTOS[0]:
+                self.padrao_atual = "padrao - 3"
+                self.quantidade_candles = 4
+                print(f">>>>>>>>>>>>>>>>>>>>>> Processando cliente: {self.padrao_atual}")
+            sleep(1)
+            Mensageria.coletar_candles(60, self.padrao_atual, self.quantidade_candles)
+
+
+        elif segundo >= 26 and segundo < 27:
+            self.padrao_atual = "padrao - 2"
+            self.quantidade_candles = 2
+            print(f">>>>>>>>>>>>>>>>>>>>>> Processando cliente: {self.padrao_atual}")
+            sleep(1)
+            Mensageria.coletar_candles(30, self.padrao_atual, self.quantidade_candles)
       
    
         if message["name"] == "timeSync":
             var_globais.CHECK_CONN = True
-            segundo = datetime.now().second
-            # coleta de candles e operações
-            if segundo >= 1 and segundo < 2:
-                self.padrao_atual = "padrao - 1"
-                sleep(1)
-                Mensageria.coletar_candles(60)
-            elif segundo >= 27 and segundo < 28:
-                self.padrao_atual = "padrao - 2"
-                sleep(1)
-                Mensageria.coletar_candles(30)
+        try:
+            if message["request_id"] in var_globais.LISTA_ATIVOS_ABERTOS["p-30s"].values:
+                ProcessarDadosServidor(message["request_id"].replace("-30", ""), 30).processar_dados_servidor_30s(message["msg"], self.padrao_atual)
+        except:
+            pass
+        try:
+            if message["request_id"] in var_globais.LISTA_ATIVOS_ABERTOS["p-1m"].values:
+                ProcessarDadosServidor(message["request_id"].replace("-60", ""), 60).processar_dados_servidor_1m(message["msg"], self.padrao_atual)
+        except:
+            pass
             
-            # atualização do rank_paridades
-            elif segundo >= 12 and segundo < 13:
-                atualizar_rank_paridades()
-
+        
+        if message["name"] == "initialization-data":
+            ProcessarDadosServidor(message["name"], 0).processar_ativos_abertos(message["msg"])
+        
+        
         elif message["name"] == "profile":
             var_globais.CHECK_STATUS_MSG = True
             try:
@@ -53,15 +89,11 @@ class ClientWSS:
             print(var_globais.ID_USUARIO_PRACTICE, var_globais.CHECK_STATUS_MSG)
         
         elif message["name"] == "option-opened":
-            ProcessarDadosOperacoes.processar_abertura_operacao(message)
-        elif message["name"] == "option-closed":
-            ProcessarDadosOperacoes.processar_fechamento_operacao(message)
-
-        elif message["request_id"] in var_globais.LISTA_ANALISE_30S:
-            ProcessarDadosServidor(message["request_id"].replace("-30", ""), 30).processar_dados_servidor_30s(message["msg"])
+            ProcessarDadosOperacoes.processar_abertura_operacao(message, self.padrao_atual)
             
-        elif message["request_id"] in var_globais.LISTA_ANALISE_1M:
-            ProcessarDadosServidor(message["request_id"].replace("-60", ""), 60).processar_dados_servidor_1m(message["msg"])
+        elif message["name"] == "option-closed":
+            threading.Thread(target=ProcessarDadosOperacoes.processar_fechamento_operacao(message)).start()
+            
         
         
 

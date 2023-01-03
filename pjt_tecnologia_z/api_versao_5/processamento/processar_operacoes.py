@@ -1,9 +1,12 @@
+import threading
+from time import sleep
 from api_versao_5.valores_globais import var_globais
 from api_versao_5.database.operacoes.insert import inserir_registro_database
 from api_versao_5.database.operacoes.update import atualizar_registro_database
 
 class ProcessarDadosOperacoes:
-    def processar_abertura_operacao(dados):
+    def processar_abertura_operacao(dados, padrao):
+        print(f"********************************>>>>>> processando abertura operação: {padrao}")
         try:
             dados = dados["msg"]
             dados_db = {
@@ -14,7 +17,7 @@ class ProcessarDadosOperacoes:
                 "expiracao" : dados["expiration_time"],
                 "direcao" : dados["direction"],
                 "ativo" : dados["active"],
-                "padrao": var_globais.OBJ_WSS.padrao_atual
+                "padrao": padrao
             }
             inserir_registro_database(dados_db)
             
@@ -22,6 +25,7 @@ class ProcessarDadosOperacoes:
             print(e)
 
     def processar_fechamento_operacao(dados):
+        sleep(3)
         dados = dados["msg"]
         id_operacao = dados["option_id"]
 
@@ -34,4 +38,5 @@ class ProcessarDadosOperacoes:
             resultado = 4
         
         atualizar_registro_database(id_operacao, resultado)
+        
         

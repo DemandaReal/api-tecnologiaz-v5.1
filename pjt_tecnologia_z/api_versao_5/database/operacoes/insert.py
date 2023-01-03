@@ -19,7 +19,7 @@ def inserir_registro_database(dados):
         ativo = dados["ativo"]
         padrao = dados["padrao"]
         status_op = 1
-        tipo_mercado = var_globais.TIPO_MERCADO
+        tipo_mercado = var_globais.LISTA_ATIVOS_ABERTOS[var_globais.LISTA_ATIVOS_ABERTOS["ativo"]==ativo]["mercado"].values[0]
         
         query = f'SELECT * FROM operacoes_api WHERE id_operacao = "{id_operacao}"'
         cursor.execute(query)
@@ -28,7 +28,8 @@ def inserir_registro_database(dados):
         
         if len(resultado) == 0:
             print(" -------------------INICIO PROCESSO INSERT DATABASE -------------------")
-            cmd_insert = f'INSERT INTO operacoes_api (id_operacao, index_operacao, user_id, abertura, expiracao, direcao, par, padrao, status_op, tipo_mercado) VALUES ("{id_operacao}", "{index_operacao}", "{user_id}", "{abertura}", "{expiracao}", "{direcao}", "{ativo}", "{padrao}", {status_op}, "{tipo_mercado}")'
+            cmd_insert = f'INSERT INTO operacoes_api (id_operacao, index_operacao, user_id, abertura, expiracao, direcao, ativo, padrao, status_op, tipo_mercado) VALUES ("{id_operacao}", "{index_operacao}", "{user_id}", "{abertura}", "{expiracao}", "{direcao}", "{ativo}", "{padrao}", {status_op}, "{tipo_mercado}")'
+            print(cmd_insert)
             cursor.execute(cmd_insert)
             conn.commit()
             cursor.close()

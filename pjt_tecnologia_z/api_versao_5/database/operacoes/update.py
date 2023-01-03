@@ -1,3 +1,4 @@
+from time import sleep
 from api_versao_5.database.conn.conn_db import conexao_db_api
 
 def atualizar_registro_database(id_operacao, resultado):

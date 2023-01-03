@@ -2,10 +2,11 @@
 from api_versao_5.database.conn.conn_db import conexao_db_api
 from api_versao_5.conversao.checar_mercado import checar_tipo_mercado
 from api_versao_5.conversao.converter_tempo import expiracao_query_diaria
+from api_versao_5.valores_globais import var_globais
 
 
 def query_rank_painel():
-    mercado = checar_tipo_mercado()[0]
+    mercado = var_globais.LISTA_ATIVOS_ABERTOS[var_globais.LISTA_ATIVOS_ABERTOS.index==0]["mercado"].values[0]
     try:
         db = conexao_db_api()
         conn = db[0]
