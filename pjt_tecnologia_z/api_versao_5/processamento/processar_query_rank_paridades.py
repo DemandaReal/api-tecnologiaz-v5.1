@@ -2,10 +2,9 @@ import pandas as pd
 from api_versao_5.database.query_painel.update_rank import query_rank_painel, update_rankings
 
 
-def atualizar_rank_paridades():
-    query = query_rank_painel()
+def atualizar_rank_paridades(conexao, cursor_db):
+    query = query_rank_painel(conexao=conexao, cursor_db=cursor_db)
     tt_registros = len(query)
-
     lista_df_final = []
     
     if tt_registros >= 1:
@@ -88,7 +87,7 @@ def atualizar_rank_paridades():
                         ["tt win", "perc win"],
                         ascending=False).head(3))
             
-            update_rankings(lista_final_ranking_ordenado)
+            update_rankings(lista_final_ranking_ordenado, conexao=conexao, cursor_db=cursor_db)
         
         except Exception as e:
             print(e)

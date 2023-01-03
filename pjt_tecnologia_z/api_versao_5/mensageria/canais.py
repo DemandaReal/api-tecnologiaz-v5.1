@@ -101,13 +101,7 @@ class Mensageria:
                 print(lista_paridades_em_analise[i])
                 var_globais.OBJ_WSS.wss.send(lista_paridades_em_analise[i])
             
-
-
-
-        
-
-
-    
-
-    
-
+    def enviar_mensagem_coleta_resultados(quantidade_operacoes):
+        msg = json.dumps({"name": "api_game_getoptions", "msg": {"limit": quantidade_operacoes, "user_balance_id": var_globais.ID_USUARIO_PRACTICE}, "request_id": "info_operacoes"})
+        print(msg)
+        var_globais.OBJ_WSS.wss.send(msg)
