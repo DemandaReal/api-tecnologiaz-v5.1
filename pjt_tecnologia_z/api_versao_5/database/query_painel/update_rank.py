@@ -12,7 +12,7 @@ def query_rank_painel(conexao, cursor_db):
         cursor = cursor_db
         exp = expiracao_query_diaria()
 
-        query = f'SELECT * FROM operacoes_api WHERE expiracao >= "{exp}" and tipo_mercado = "{mercado}"'
+        query = f'SELECT * FROM operacoes_api WHERE expiracao >= "{exp}" and tipo_mercado = "{mercado}" and ativo <> "EURUSD" and ativo <> "EURUSD-OTC"'
         print(query)
         cursor.execute(query)
         resultado_query = cursor.fetchall()
@@ -33,6 +33,11 @@ def update_rankings(lista_rankings, conexao, cursor_db):
         conn = conexao
         cursor = cursor_db
         cont = 1
+        print(">>>>>>> Banco de dados resetado.")
+        cmd_update = f'UPDATE rank_paridades_v5 SET par = "-", tt_analisado = {0}, acertos = {0}, erros = {0}, perc_win = {0.0}, padrao = "-" WHERE id >= {0}'
+        cursor.execute(cmd_update)
+        conn.commit()
+        print(cmd_update)
         for i in range(len(lista_rankings)):
             index_df = lista_rankings[i].index.values
             for j in index_df:

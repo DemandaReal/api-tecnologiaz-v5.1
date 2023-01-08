@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 from time import time
 
@@ -24,6 +24,18 @@ def expiracao_query_diaria():
     minuto = 0
     expiracao_query = int(datetime(year=ano, month=mes, day=dia, hour=hora, minute=minuto).timestamp())
     return expiracao_query
+
+def expiracao_query_diaria_2():
+    tDelta = timedelta(hours=3)
+    dataHoraSP = data_hora_sao_paulo() + tDelta
+    dia = dataHoraSP.day
+    mes = dataHoraSP.month
+    ano = dataHoraSP.year
+    hora = 3
+    minuto = 0
+    expiracao_query = int(datetime(year=ano, month=mes, day=dia, hour=hora, minute=minuto).timestamp())
+    return expiracao_query
+
 
 
 
