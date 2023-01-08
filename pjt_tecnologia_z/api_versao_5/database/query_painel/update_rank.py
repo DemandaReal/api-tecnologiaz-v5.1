@@ -54,7 +54,7 @@ def update_rankings(lista_rankings, conexao, cursor_db):
                         cursor.execute(cmd_update)
                         conn.commit()
                         print(cmd_update)
-                    elif tt_acertos >= 0:
+                    elif tt_acertos >= 1 and ativo != "EURUSD" and ativo != "EURUSD-OTC":
                         cmd_update = f'UPDATE rank_paridades_v5 SET par = "{ativo}", tt_analisado = {tt_analisado}, acertos = {tt_acertos}, erros = {tt_erros}, perc_win = {perc_win}, padrao = "{padrao}" WHERE id = {cont}'
                         cursor.execute(cmd_update)
                         conn.commit()

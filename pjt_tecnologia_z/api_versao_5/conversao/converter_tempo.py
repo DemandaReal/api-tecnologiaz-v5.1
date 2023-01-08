@@ -31,8 +31,9 @@ def expiracao_query_diaria_2():
     dia = dataHoraSP.day
     mes = dataHoraSP.month
     ano = dataHoraSP.year
-    hora = 3
+    hora = 6
     minuto = 0
+    expiracao_query = int(datetime(year=ano, month=mes, day=dia, hour=hora, minute=minuto).timestamp())
     expiracao_query = int(datetime(year=ano, month=mes, day=dia, hour=hora, minute=minuto).timestamp())
     return expiracao_query
 
